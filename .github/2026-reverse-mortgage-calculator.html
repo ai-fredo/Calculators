@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 Reverse Mortgage Eligibility & Proceeds Calculator</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .calculator-wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      overflow: hidden;
+    }
+
+    /* ==================== HEADER ==================== */
+    .calc-header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #ffffff;
+      padding: 2rem 2rem 1.75rem;
+      text-align: center;
+    }
+    .calc-header h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.01em;
+    }
+    .calc-header p {
+      font-size: 0.88rem;
+      opacity: 0.82;
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    .calc-header .badge {
+      display: inline-block;
+      background: rgba(59,130,246,0.25);
+      color: #93c5fd;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.25rem 0.7rem;
+      border-radius: 20px;
+      margin-bottom: 0.6rem;
+    }
+
+    /* ==================== BODY ==================== */
+    .calc-body { padding: 1.75rem 2rem 2rem; }
+
+    /* ==================== INPUT GROUPS ==================== */
+    .input-group { margin-bottom: 1.25rem; }
+    .input-group h3 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6b7280;
+      margin-bottom: 0.65rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid #e5e7eb;
+      font-weight: 600;
+    }
+
+    .field { margin-bottom: 1rem; }
+    .field label {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      color: #374151;
+    }
+    .field .hint {
+      font-size: 0.76rem;
+      color: #9ca3af;
+      margin-bottom: 0.3rem;
+      line-height: 1.4;
+    }
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #fafafa;
+      color: #1a1a2e;
+    }
+    .field input:focus,
+    .field select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+      background: #fff;
+    }
+
+    .currency-input { position: relative; }
+    .currency-input span {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6b7280;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .currency-input input { padding-left: 1.6rem; }
+
+    /* ==================== TOOLTIP ==================== */
+    .tooltip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      color: #6b7280;
+      font-size: 0.65rem;
+      font-weight: 700;
+      cursor: help;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .tooltip-icon .tooltip-text {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f2937;
+      color: #fff;
+      font-size: 0.73rem;
+      font-weight: 400;
+      padding: 0.5rem 0.7rem;
+      border-radius: 6px;
+      width: 240px;
+      line-height: 1.45;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      text-transform: none;
+      letter-spacing: normal;
+    }
+    .tooltip-icon .tooltip-text::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #1f2937;
+    }
+    .tooltip-icon:hover .tooltip-text { display: block; }
+
+    /* ==================== VALIDATION ERROR ==================== */
+    .validation-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.82rem;
+      color: #dc2626;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .validation-error svg { flex-shrink: 0; }
+
+    /* ==================== CALCULATE BUTTON ==================== */
+    .calc-button {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      margin-top: 0.25rem;
+    }
+    .calc-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    }
+    .calc-button:active { transform: translateY(0); }
+    .calc-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* ==================== RESULTS PANEL ==================== */
+    .results-panel {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      background: #f0f9ff;
+      border-radius: 12px;
+      border: 1px solid #bfdbfe;
+    }
+    .results-panel h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #1e40af;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid #dbeafe;
+    }
+    .result-item:last-of-type { border-bottom: none; }
+    .result-label {
+      font-size: 0.85rem;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .result-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1e40af;
+    }
+
+    /* Cash-out = green, cash-to-close = red */
+    .result-cashout { color: #16a34a; }
+    .result-shortfall { color: #dc2626; }
+
+    .result-primary {
+      text-align: center;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      background: #ffffff;
+      border-radius: 10px;
+    }
+    .result-primary .big-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1e40af;
+    }
+    .result-primary .big-label {
+      font-size: 0.82rem;
+      color: #6b7280;
+      margin-top: 0.2rem;
+    }
+
+    .hecm-cap-notice {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 0.55rem 0.8rem;
+      font-size: 0.78rem;
+      color: #92400e;
+      margin-bottom: 0.75rem;
+      line-height: 1.45;
+    }
+
+    .summary-text {
+      margin-top: 0.75rem;
+      padding: 0.85rem 1rem;
+      background: #fff;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #374151;
+      line-height: 1.7;
+    }
+    .summary-text strong { color: #1e40af; }
+
+    /* ==================== COMPARISON PANEL ==================== */
+    .comparison-panel {
+      margin-top: 1.25rem;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+    }
+    .comparison-header {
+      background: #f9fafb;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .comparison-header h3 {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #374151;
+      font-weight: 700;
+      margin: 0;
+    }
+    .comparison-header .toggle-icon {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      transition: transform 0.2s;
+    }
+
+    .comparison-body { padding: 1rem 1.25rem; }
+    .comparison-table { width: 100%; border-collapse: collapse; }
+    .comparison-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #6b7280;
+      padding: 0.4rem 0.5rem;
+      border-bottom: 2px solid #e5e7eb;
+      font-weight: 600;
+    }
+    .comparison-table td {
+      padding: 0.5rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #f3f4f6;
+      color: #374151;
+    }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .comparison-table .col-label { font-weight: 600; color: #1a1a2e; width: 40%; }
+    .comparison-table .col-hecm { text-align: right; }
+    .comparison-table .col-jumbo { text-align: right; }
+    .comparison-table .highlight-better {
+      color: #16a34a;
+      font-weight: 700;
+    }
+    .comparison-table .na-cell {
+      color: #d1d5db;
+      font-style: italic;
+    }
+
+    /* ==================== DISCLAIMER ==================== */
+    .disclaimer {
+      margin-top: 1.25rem;
+      padding: 0.85rem 1rem;
+      font-size: 0.72rem;
+      color: #9ca3af;
+      line-height: 1.55;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #f3f4f6;
+    }
+    .disclaimer strong { color: #6b7280; }
+
+    /* ==================== RESPONSIVE ==================== */
+    @media (max-width: 520px) {
+      body { padding: 0.75rem 0.5rem; }
+      .calc-header { padding: 1.5rem 1.25rem; }
+      .calc-header h1 { font-size: 1.2rem; }
+      .calc-body { padding: 1.25rem 1.25rem 1.5rem; }
+      .result-primary .big-number { font-size: 1.7rem; }
+      .result-item { flex-direction: column; gap: 0.1rem; }
+      .result-value { font-size: 1rem; }
+      .tooltip-icon .tooltip-text { width: 200px; }
+      .comparison-table { font-size: 0.78rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator-wrapper" x-data="reverseCalc()">
+
+  <!-- HEADER -->
+  <div class="calc-header">
+    <div class="badge">2026 FHA Limit: $1,249,125</div>
+    <h1>Reverse Mortgage Eligibility & Proceeds Calculator</h1>
+    <p>Estimate your maximum reverse mortgage loan amount and whether you could receive cash-out — or need cash to close — based on age, home value, and current mortgage balance.</p>
+  </div>
+
+  <div class="calc-body">
+
+    <!-- GROUP 1: PROGRAM & BORROWER -->
+    <div class="input-group">
+      <h3>Program & Borrower</h3>
+
+      <div class="field">
+        <label>
+          Reverse Mortgage Program
+          <span class="tooltip-icon">?
+            <span class="tooltip-text">FHA HECM is government-insured (age 62+, home value capped at $1,249,125). Proprietary Jumbo is a private product (age 55+, no value cap).</span>
+          </span>
+        </label>
+        <div class="hint">Choose the product type to apply the correct age and LTV rules.</div>
+        <select x-model="program" @change="resetResults()">
+          <option value="hecm">FHA HECM (age ≥ 62)</option>
+          <option value="jumbo">Proprietary Jumbo (age ≥ 55)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>
+          Youngest Borrower Age
+          <span class="tooltip-icon">?
+            <span class="tooltip-text">The youngest borrower or non-borrowing spouse age determines the maximum LTV. Always use the youngest person's age.</span>
+          </span>
+        </label>
+        <div class="hint" x-text="program === 'hecm' ? 'Must be 62 or older for FHA HECM.' : 'Must be 55 or older for Proprietary Jumbo.'"></div>
+        <input type="number" x-model.number="age" :min="program === 'hecm' ? 62 : 55" max="100" placeholder="e.g., 65" @input="resetResults()">
+      </div>
+    </div>
+
+    <!-- VALIDATION ERROR -->
+    <template x-if="ageError">
+      <div class="validation-error">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span x-text="ageError"></span>
+      </div>
+    </template>
+
+    <!-- GROUP 2: PROPERTY & MORTGAGE -->
+    <div class="input-group">
+      <h3>Property & Mortgage</h3>
+
+      <div class="field">
+        <label>
+          Home Value
+          <span class="tooltip-icon">?
+            <span class="tooltip-text">Estimated current market value. For HECM, values above $1,249,125 are capped at the FHA lending limit.</span>
+          </span>
+        </label>
+        <div class="hint">Estimated current market value of your home.</div>
+        <div class="currency-input">
+          <span>$</span>
+          <input type="number" x-model.number="homeValue" placeholder="e.g., 600000" min="0" step="1000" @input="resetResults()">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>
+          Current Mortgage Balance (Total Payoff)
+          <span class="tooltip-icon">?
+            <span class="tooltip-text">Total of all existing liens/mortgages to be paid off at closing. Enter 0 if no current mortgage.</span>
+          </span>
+        </label>
+        <div class="hint">Total current liens to be paid off at closing.</div>
+        <div class="currency-input">
+          <span>$</span>
+          <input type="number" x-model.number="currentBalance" placeholder="e.g., 200000" min="0" step="1000" @input="resetResults()">
+        </div>
+      </div>
+    </div>
+
+    <!-- CALCULATE BUTTON -->
+    <button class="calc-button" @click="calculate()" :disabled="!!ageError || !homeValue || homeValue <= 0">
+      Calculate Results
+    </button>
+
+    <!-- ==================== RESULTS ==================== -->
+    <div class="results-panel" x-show="showResults" x-transition.duration.300ms>
+      <h3>Your Estimated Results</h3>
+
+      <!-- HECM Cap Notice -->
+      <template x-if="showHecmCap">
+        <div class="hecm-cap-notice">
+          <strong>HECM Lending Limit Applied:</strong> Your home value of <span x-text="formatCurrency(homeValue)"></span> exceeds the 2026 FHA cap of $1,249,125. The calculation uses the capped value. Amount above cap: <strong x-text="formatCurrency(homeValue - 1249125)"></strong>.
+        </div>
+      </template>
+
+      <!-- PRIMARY: Principal Limit -->
+      <div class="result-primary">
+        <div class="big-number" x-text="formatCurrency(principalLimit)"></div>
+        <div class="big-label">Potential Loan Amount (Principal Limit)</div>
+      </div>
+
+      <!-- SECONDARY RESULTS -->
+      <div class="result-item">
+        <span class="result-label">
+          Max Allowed LTV (Age-Based)
+          <span class="tooltip-icon" style="margin-left:2px;">?
+            <span class="tooltip-text">Estimated from age-based tables. Does not include investor/fee/rate adjustments that affect actual amounts.</span>
+          </span>
+        </span>
+        <span class="result-value" x-text="maxLtv.toFixed(1) + '%'"></span>
+      </div>
+
+      <template x-if="program === 'hecm'">
+        <div class="result-item">
+          <span class="result-label">Effective Home Value Used</span>
+          <span class="result-value" x-text="formatCurrency(effectiveHomeValue)"></span>
+        </div>
+      </template>
+
+      <div class="result-item">
+        <span class="result-label">Current LTV</span>
+        <span class="result-value" x-text="currentLtv.toFixed(2) + '%'"></span>
+      </div>
+
+      <!-- CASH-OUT (green) -->
+      <template x-if="cashOut > 0">
+        <div class="result-item">
+          <span class="result-label" style="font-weight:700;">Estimated Cash-Out Available</span>
+          <span class="result-value result-cashout" x-text="formatCurrency(cashOut)"></span>
+        </div>
+      </template>
+
+      <!-- CASH TO CLOSE (red) -->
+      <template x-if="cashToClose > 0">
+        <div class="result-item">
+          <span class="result-label" style="font-weight:700;">Estimated Cash to Close Required</span>
+          <span class="result-value result-shortfall" x-text="formatCurrency(cashToClose)"></span>
+        </div>
+      </template>
+
+      <!-- NO CASH EITHER WAY -->
+      <template x-if="cashOut === 0 && cashToClose === 0 && currentBalance > 0">
+        <div class="result-item">
+          <span class="result-label" style="font-weight:600;">Proceeds fully cover your existing balance — no cash-out and no cash to close.</span>
+        </div>
+      </template>
+
+      <!-- SUMMARY -->
+      <div class="summary-text" x-html="summaryText"></div>
+    </div>
+
+    <!-- ==================== SIDE-BY-SIDE COMPARISON ==================== -->
+    <div class="comparison-panel" x-show="showResults" x-transition.duration.300ms>
+      <div class="comparison-header" @click="showComparison = !showComparison">
+        <h3>HECM vs. Jumbo Comparison</h3>
+        <span class="toggle-icon" :style="showComparison ? 'transform:rotate(180deg)' : ''">▼</span>
+      </div>
+      <div class="comparison-body" x-show="showComparison" x-transition.duration.200ms>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="col-hecm">FHA HECM</th>
+              <th class="col-jumbo">Jumbo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-label">Minimum Age</td>
+              <td class="col-hecm">62</td>
+              <td class="col-jumbo">55</td>
+            </tr>
+            <tr>
+              <td class="col-label">Max LTV (Your Age)</td>
+              <td class="col-hecm" :class="compHecmEligible ? '' : 'na-cell'" x-text="compHecmEligible ? compHecmLtv.toFixed(1) + '%' : 'N/A (under 62)'"></td>
+              <td class="col-jumbo" :class="compJumboEligible ? '' : 'na-cell'" x-text="compJumboEligible ? compJumboLtv.toFixed(1) + '%' : 'N/A (under 55)'"></td>
+            </tr>
+            <tr>
+              <td class="col-label">Effective Home Value</td>
+              <td class="col-hecm" :class="compHecmEligible ? '' : 'na-cell'" x-text="compHecmEligible ? formatCurrency(compHecmEffective) : 'N/A'"></td>
+              <td class="col-jumbo" :class="compJumboEligible ? '' : 'na-cell'" x-text="compJumboEligible ? formatCurrency(homeValue) : 'N/A'"></td>
+            </tr>
+            <tr>
+              <td class="col-label">Principal Limit</td>
+              <td class="col-hecm" :class="compHecmEligible ? (compHecmPrincipal >= compJumboPrincipal ? 'highlight-better' : '') : 'na-cell'" x-text="compHecmEligible ? formatCurrency(compHecmPrincipal) : 'N/A'"></td>
+              <td class="col-jumbo" :class="compJumboEligible ? (compJumboPrincipal > compHecmPrincipal ? 'highlight-better' : '') : 'na-cell'" x-text="compJumboEligible ? formatCurrency(compJumboPrincipal) : 'N/A'"></td>
+            </tr>
+            <tr>
+              <td class="col-label">Est. Cash-Out</td>
+              <td class="col-hecm" :class="compHecmEligible ? (compHecmCashOut >= compJumboCashOut && compHecmCashOut > 0 ? 'highlight-better' : '') : 'na-cell'" x-text="compHecmEligible ? formatCurrency(compHecmCashOut) : 'N/A'"></td>
+              <td class="col-jumbo" :class="compJumboEligible ? (compJumboCashOut > compHecmCashOut && compJumboCashOut > 0 ? 'highlight-better' : '') : 'na-cell'" x-text="compJumboEligible ? formatCurrency(compJumboCashOut) : 'N/A'"></td>
+            </tr>
+            <tr>
+              <td class="col-label">Value Cap</td>
+              <td class="col-hecm">$1,249,125</td>
+              <td class="col-jumbo">None</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="font-size:0.73rem; color:#9ca3af; margin-top:0.6rem; line-height:1.4;">
+          Green values indicate the higher estimate at your current inputs. Actual amounts depend on lender guidelines, rates, and fees.
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== DISCLAIMER ==================== -->
+    <div class="disclaimer">
+      <strong>Disclaimer:</strong> This calculator is for informational and educational purposes only and provides a simplified estimate. It does not constitute financial, legal, or tax advice, nor does it guarantee loan approval or specific proceeds. Actual reverse mortgage terms and eligibility depend on many factors including (but not limited to) interest rates, lender/investor guidelines, fees and closing costs, property type, occupancy requirements, payoff demands, set-asides, and financial assessment. FHA HECM estimates may be affected by the FHA lending limit and other FHA program rules. Please consult a qualified reverse mortgage professional for a personalized quote and official eligibility determination. FHA HECM calculations are based on the 2026 county limit of $1,249,125.
+    </div>
+
+  </div>
+</div>
+
+<script>
+function reverseCalc() {
+  // ==================== LTV TABLES ====================
+  const HECM_LTV = [
+    { age: 62, ltv: 35.7 },
+    { age: 65, ltv: 37.8 },
+    { age: 70, ltv: 41.5 },
+    { age: 75, ltv: 44.3 },
+    { age: 80, ltv: 48.8 },
+    { age: 85, ltv: 54.9 },
+    { age: 90, ltv: 61.8 }
+  ];
+
+  const JUMBO_LTV = [
+    { age: 55, ltv: 29.5 },
+    { age: 60, ltv: 31.0 },
+    { age: 65, ltv: 32.7 },
+    { age: 70, ltv: 35.6 },
+    { age: 75, ltv: 40.1 },
+    { age: 80, ltv: 45.0 },
+    { age: 85, ltv: 50.8 },
+    { age: 90, ltv: 51.4 }
+  ];
+
+  const HECM_LIMIT = 1249125;
+
+  function interpolateLtv(table, age) {
+    if (age <= table[0].age) return table[0].ltv;
+    if (age >= table[table.length - 1].age) return table[table.length - 1].ltv;
+    for (let i = 0; i < table.length - 1; i++) {
+      if (age >= table[i].age && age <= table[i + 1].age) {
+        const x0 = table[i].age, y0 = table[i].ltv;
+        const x1 = table[i + 1].age, y1 = table[i + 1].ltv;
+        const result = y0 + (y1 - y0) * (age - x0) / (x1 - x0);
+        return Math.round(result * 10) / 10;
+      }
+    }
+    return table[table.length - 1].ltv;
+  }
+
+  return {
+    // Inputs
+    program: 'hecm',
+    age: 65,
+    homeValue: 600000,
+    currentBalance: 0,
+
+    // Outputs
+    showResults: false,
+    maxLtv: 0,
+    effectiveHomeValue: 0,
+    principalLimit: 0,
+    cashOut: 0,
+    cashToClose: 0,
+    currentLtv: 0,
+    summaryText: '',
+    showHecmCap: false,
+
+    // Comparison
+    showComparison: false,
+    compHecmEligible: false,
+    compJumboEligible: false,
+    compHecmLtv: 0,
+    compJumboLtv: 0,
+    compHecmEffective: 0,
+    compHecmPrincipal: 0,
+    compJumboPrincipal: 0,
+    compHecmCashOut: 0,
+    compJumboCashOut: 0,
+
+    // Computed validation
+    get ageError() {
+      if (!this.age && this.age !== 0) return null;
+      if (this.program === 'hecm' && this.age < 62) {
+        return 'FHA HECM requires the youngest borrower to be at least 62 years old.';
+      }
+      if (this.program === 'jumbo' && this.age < 55) {
+        return 'Proprietary Jumbo requires the youngest borrower to be at least 55 years old.';
+      }
+      return null;
+    },
+
+    resetResults() {
+      this.showResults = false;
+    },
+
+    calculate() {
+      if (this.ageError || !this.homeValue || this.homeValue <= 0) return;
+
+      const age = Math.max(18, Math.min(100, this.age));
+      const hv = this.homeValue;
+      const bal = this.currentBalance || 0;
+
+      // -- Selected Program Calculation --
+      if (this.program === 'hecm') {
+        this.maxLtv = interpolateLtv(HECM_LTV, age);
+        this.effectiveHomeValue = Math.min(hv, HECM_LIMIT);
+        this.showHecmCap = hv > HECM_LIMIT;
+      } else {
+        this.maxLtv = interpolateLtv(JUMBO_LTV, age);
+        this.effectiveHomeValue = hv;
+        this.showHecmCap = false;
+      }
+
+      this.principalLimit = this.effectiveHomeValue * (this.maxLtv / 100);
+      this.cashOut = Math.max(this.principalLimit - bal, 0);
+      this.cashToClose = Math.max(bal - this.principalLimit, 0);
+      this.currentLtv = hv > 0 ? (bal / hv) * 100 : 0;
+
+      // -- Comparison Calculations --
+      this.compHecmEligible = age >= 62;
+      this.compJumboEligible = age >= 55;
+
+      if (this.compHecmEligible) {
+        this.compHecmLtv = interpolateLtv(HECM_LTV, age);
+        this.compHecmEffective = Math.min(hv, HECM_LIMIT);
+        this.compHecmPrincipal = this.compHecmEffective * (this.compHecmLtv / 100);
+        this.compHecmCashOut = Math.max(this.compHecmPrincipal - bal, 0);
+      } else {
+        this.compHecmLtv = 0;
+        this.compHecmEffective = 0;
+        this.compHecmPrincipal = 0;
+        this.compHecmCashOut = 0;
+      }
+
+      if (this.compJumboEligible) {
+        this.compJumboLtv = interpolateLtv(JUMBO_LTV, age);
+        this.compJumboPrincipal = hv * (this.compJumboLtv / 100);
+        this.compJumboCashOut = Math.max(this.compJumboPrincipal - bal, 0);
+      } else {
+        this.compJumboLtv = 0;
+        this.compJumboPrincipal = 0;
+        this.compJumboCashOut = 0;
+      }
+
+      // -- Summary --
+      this.buildSummary(age, hv, bal);
+
+      this.showResults = true;
+    },
+
+    buildSummary(age, hv, bal) {
+      const progName = this.program === 'hecm' ? 'FHA HECM' : 'Proprietary Jumbo';
+      let text = `Based on your age of <strong>${age}</strong> and a home value of <strong>${this.formatCurrency(hv)}</strong>, `;
+      text += `the <strong>${progName}</strong> program allows a maximum LTV of <strong>${this.maxLtv.toFixed(1)}%</strong>, `;
+      text += `resulting in an estimated principal limit of <strong>${this.formatCurrency(this.principalLimit)}</strong>.`;
+
+      if (this.program === 'hecm' && hv > HECM_LIMIT) {
+        text += ` <em>Note: Your home value exceeds the 2026 FHA HECM lending limit of $1,249,125, so the calculation is based on the capped value of ${this.formatCurrency(this.effectiveHomeValue)}.</em>`;
+      }
+
+      if (bal > 0) {
+        text += ` After paying off your existing mortgage balance of <strong>${this.formatCurrency(bal)}</strong>, `;
+        if (this.cashOut > 0) {
+          text += `you could potentially receive approximately <strong style="color:#16a34a;">${this.formatCurrency(this.cashOut)}</strong> in cash.`;
+        } else if (this.cashToClose > 0) {
+          text += `you would need to bring approximately <strong style="color:#dc2626;">${this.formatCurrency(this.cashToClose)}</strong> to closing to cover the shortfall.`;
+        } else {
+          text += `the proceeds would exactly cover your balance with no remaining cash-out.`;
+        }
+      } else {
+        text += ` With no existing mortgage, the full estimated principal limit of <strong style="color:#16a34a;">${this.formatCurrency(this.principalLimit)}</strong> could be available to you.`;
+      }
+
+      this.summaryText = text;
+    },
+
+    // Formatting
+    formatCurrency(val) {
+      if (val === null || val === undefined || isNaN(val)) return '$0';
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD',
+        minimumFractionDigits: 0, maximumFractionDigits: 0
+      }).format(val);
+    }
+  };
+}
+</script>
+
+</body>
+</html>
